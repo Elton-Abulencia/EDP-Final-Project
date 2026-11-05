@@ -4,7 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <script src="main.js" type="module"></script>
+    <script src="main.js" type="module" defer></script>
   </head>
-  <body></body>
+  <body>
+    <div id="root"></div>
+
+    <template id="dashboard">
+      <p>on dashboard</p>
+      <button id="goto">go to addCustomer</button>
+    </template>
+
+    <template id="addCustomer">
+      <p>on addcustomer</p>
+      <button id="goto">go to dashboard</button>
+    </template>
+  </body>
 </html>
