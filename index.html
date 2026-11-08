@@ -5,18 +5,287 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="main.js" type="module" defer></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: monospace, sans-serif;
+        display: flex;
+        height: 100vh;
+        background-color: #ffffff;
+        color: #000000;
+      }
+
+      .sidebar {
+        width: 220px;
+        border-right: 1px solid #000000;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px;
+      }
+
+      .sys-name {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+      }
+
+      #sidebarButtons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex-grow: 1;
+      }
+
+      .sidebar-link {
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      .sidebar-link:hover {
+        font-weight: bold;
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid #000000;
+        margin: 20px 0;
+      }
+
+      #root {
+        flex-grow: 1;
+        padding: 30px;
+        overflow-y: auto;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 400px;
+      }
+
+      input,
+      textarea {
+        padding: 8px;
+        border: 1px solid #000000;
+        background: #ffffff;
+        font-family: inherit;
+      }
+
+      button {
+        padding: 8px 12px;
+        border: 1px solid #000000;
+        background: #ffffff;
+        cursor: pointer;
+        font-family: inherit;
+        text-align: center;
+      }
+
+      button:hover {
+        background: #000000;
+        color: #ffffff;
+      }
+
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      li {
+        border: 1px solid #000000;
+        padding: 10px;
+        margin-bottom: 8px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+      }
+    </style>
   </head>
   <body>
+    <div class="sidebar">
+      <div class="sys-name">Tasa & Tawa</div>
+      <div id="sidebarButtons">
+        <span class="sidebar-link" data-view="dashboard">Dashboard</span>
+        <span class="sidebar-link" data-view="addCustomer">Add Customer</span>
+        <span class="sidebar-link" data-view="addProducts"
+          >Add new Products</span
+        >
+        <span class="sidebar-link" data-view="addRewards">Add new Rewards</span>
+        <span class="sidebar-link" data-view="processPurchase"
+          >Process Purchase</span
+        >
+        <span class="sidebar-link" data-view="redeemRewards"
+          >Redeem Rewards</span
+        >
+      </div>
+    </div>
+    <hr />
     <div id="root"></div>
 
     <template id="dashboard">
       <p>on dashboard</p>
-      <button id="goto">go to addCustomer</button>
+      <button id="showAddCustomerButton">Add Customer</button>
+      <button id="showPurchaseProcessButton">Process Purchase</button>
+      <button id="showRedeemButton">Redeem Rewards</button>
+      <button id="findCustomer">Find Customer</button>
     </template>
 
     <template id="addCustomer">
-      <p>on addcustomer</p>
-      <button id="goto">go to dashboard</button>
+      Add Customer
+      <form action="" id="addCustomerForm">
+        <label for="name">Name</label>
+        <input type="text" name="name" id="name" placeholder="name" />
+        <p id="nameErr" style="color: red"></p>
+        <br />
+        <label for="code">Code</label>
+        <input type="text" name="code" id="code" placeholder="code" />
+        <p id="codeErr" style="color: red"></p>
+        <button type="button" id="generateCode">Generate Code</button>
+        <br /><br />
+        <button type="submit" id="submitBtn">Submit</button>
+        <p id="successMsg" style="color: green"></p>
+      </form>
+    </template>
+
+    <template id="addProducts">
+      <form action="" id="addProductForm">
+        <label for="productName">Product Name</label>
+        <input type="text" name="productName" id="productName" />
+        <p id="nameErr" style="color: red"></p>
+        <br />
+        <label for="description">Description</label>
+        <textarea name="description" id="description"></textarea>
+        <p id="descErr" style="color: red"></p>
+        <br />
+        <label for="points">Points</label>
+        <input type="number" name="points" id="points" />
+        <p id="pointsErr" style="color: red"></p>
+        <br />
+        <button type="submit">Add Product</button>
+        <p id="successMsg" style="color: green"></p>
+      </form>
+    </template>
+
+    <template id="addRewards">
+      <form action="" id="addRewardForm">
+        <label for="rewardName">Reward Name</label>
+        <input type="text" name="rewardName" id="rewardName" />
+        <p id="nameErr" style="color: red"></p>
+        <br />
+        <label for="description">Description</label>
+        <textarea name="description" id="description"></textarea>
+        <p id="descErr" style="color: red"></p>
+        <br />
+        <label for="points">Points</label>
+        <input type="number" name="points" id="points" />
+        <p id="pointsErr" style="color: red"></p>
+        <br />
+        <button type="submit">Add Reward</button>
+        <p id="successMsg" style="color: green"></p>
+      </form>
+    </template>
+
+    <template id="processPurchase">
+      <label for="code">Code</label>
+      <input type="text" name="code" id="code" />
+      <button type="button" id="findCustomer">Find Customer</button>
+      <p id="findError"></p>
+
+      <div id="displayCustomer" style="display: none">
+        <div><strong>Name:</strong> <span id="customerName"></span></div>
+        <div><strong>Points:</strong> <span id="customerPoints"></span></div>
+      </div>
+
+      <div id="purchaseWorkflow" style="display: none">
+        <hr />
+        <h3>Added Products (Cart)</h3>
+        <template id="addedProductEntry">
+          <li class="added-product-item">
+            name: <span class="productName"></span> | points:
+            <span class="points"></span> | qty: <span class="quantity"></span>
+            <button type="button" class="increaseProduct">+</button>
+            <button type="button" class="decreaseProduct">-</button>
+            <button type="button" class="removeProduct">Remove</button>
+          </li>
+        </template>
+        <ul id="addedProducts"></ul>
+        <hr />
+
+        <h3>Product Catalog</h3>
+        <template id="productEntry">
+          <li class="product-item">
+            name: <span class="productName"></span> | points:
+            <span class="points"></span>
+            <button type="button" class="addProduct">Add Product</button>
+          </li>
+        </template>
+        <ul id="productList"></ul>
+        <hr />
+        <button id="confirmTransaction">Confirm Transaction</button>
+      </div>
+    </template>
+
+    <template id="redeemRewards">
+      <div>
+        <label for="code">Code</label>
+        <input type="text" name="code" id="code" />
+        <button type="button" id="findCustomer">Find Customer</button>
+        <p id="findError" style="color: red"></p>
+      </div>
+
+      <div
+        id="displayCustomer"
+        style="
+          display: none;
+          border: 1px solid #000;
+          padding: 10px;
+          margin-top: 10px;
+          max-width: 300px;
+        "
+      >
+        <div><strong>Name:</strong> <span id="customerName"></span></div>
+        <div><strong>Points:</strong> <span id="customerPoints"></span></div>
+      </div>
+
+      <div id="redeemWorkflow" style="display: none">
+        <hr />
+        <h3>Selected Rewards (Cart)</h3>
+        <template id="addedRewardEntry">
+          <li class="added-reward-item">
+            <span
+              >name: <span class="rewardName"></span> | points cost:
+              <span class="points"></span> | qty: <span class="quantity"></span
+            ></span>
+            <div>
+              <button type="button" class="increaseReward">+</button>
+              <button type="button" class="decreaseReward">-</button>
+              <button type="button" class="removeReward">Remove</button>
+            </div>
+          </li>
+        </template>
+        <ul id="addedRewards"></ul>
+        <hr />
+
+        <h3>Available Rewards</h3>
+        <template id="rewardEntry">
+          <li class="reward-item">
+            <span
+              >name: <span class="rewardName"></span> | points:
+              <span class="points"></span
+            ></span>
+            <button type="button" class="addReward">Redeem</button>
+          </li>
+        </template>
+        <ul id="rewardList"></ul>
+        <hr />
+        <button id="confirmRedemption">Confirm Redemption</button>
+      </div>
     </template>
   </body>
 </html>
