@@ -18,9 +18,9 @@ registerViews(view, {
 });
 
 // console.log(view._views);
-// view.goto("dashboard");
+view.goto("dashboard");
 // view.goto("addCustomer");
-view.goto("addProducts");
+// view.goto("addProducts");
 // view.goto("addRewards");
 // view.goto("processPurchase");
 
