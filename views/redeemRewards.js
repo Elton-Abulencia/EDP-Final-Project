@@ -11,7 +11,13 @@ export function registerRedeemRewards(view, { customers, rewards }) {
     const addedRewardsContainer = elem.querySelector("#addedRewards");
     const rewardEntryTemplate = elem.querySelector("#rewardEntry");
     const addedRewardEntryTemplate = elem.querySelector("#addedRewardEntry");
+    const prevRewardPageBtn = elem.querySelector("#prevRewardPageBtn");
+    const nextRewardPageBtn = elem.querySelector("#nextRewardPageBtn");
+    const rewardPageIndicator = elem.querySelector("#rewardPageIndicator");
     const confirmRedemptionButton = elem.querySelector("#confirmRedemption");
+
+    const ITEMS_PER_PAGE = 5;
+    let currentPage = 1;
 
     let customer = null;
     const cart = new Map();
@@ -38,10 +44,22 @@ export function registerRedeemRewards(view, { customers, rewards }) {
         const emptyLi = document.createElement("li");
         emptyLi.textContent = "No available rewards for current points.";
         rewardListContainer.appendChild(emptyLi);
+        rewardPageIndicator.textContent = "Page 0 of 0";
+        prevRewardPageBtn.disabled = true;
+        nextRewardPageBtn.disabled = true;
         return;
       }
 
-      availableRewards.forEach((r) => {
+      const totalPages = Math.max(
+        1,
+        Math.ceil(availableRewards.length / ITEMS_PER_PAGE),
+      );
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const pageItems = availableRewards.slice(start, start + ITEMS_PER_PAGE);
+
+      pageItems.forEach((r) => {
         const clone = rewardEntryTemplate.content.cloneNode(true);
         const item = clone.querySelector(".reward-item");
         item.dataset.rewardId = r.id;
@@ -49,6 +67,10 @@ export function registerRedeemRewards(view, { customers, rewards }) {
         item.querySelector(".points").textContent = r.points;
         rewardListContainer.appendChild(clone);
       });
+
+      rewardPageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+      prevRewardPageBtn.disabled = currentPage <= 1;
+      nextRewardPageBtn.disabled = currentPage >= totalPages;
     }
 
     function resetCustomerDisplay() {
@@ -121,6 +143,7 @@ export function registerRedeemRewards(view, { customers, rewards }) {
       customerPointsDisplay.textContent = customer.points;
       displayCustomer.style.display = "block";
 
+      currentPage = 1;
       redeemWorkflow.style.display = "block";
       renderCart();
     }
@@ -187,7 +210,10 @@ export function registerRedeemRewards(view, { customers, rewards }) {
       if (!customer || cart.size === 0) return;
 
       const rewardIds = [];
+      const itemSummaries = [];
+
       for (const [rewardId, item] of cart.entries()) {
+        itemSummaries.push(`${item.reward.name} (x${item.quantity})`);
         for (let i = 0; i < item.quantity; i++) {
           rewardIds.push(rewardId);
         }
@@ -205,6 +231,11 @@ export function registerRedeemRewards(view, { customers, rewards }) {
       }
 
       customer.updatePoints((p) => p - totalPointsCost);
+      customer.addHistory(
+        "Reward Redeemed",
+        `Spent ${totalPointsCost} pts — ${itemSummaries.join(", ")}`,
+      );
+
       alert(
         `Redemption confirmed! Deducted ${totalPointsCost} points from ${customer.name}.`,
       );
@@ -219,9 +250,26 @@ export function registerRedeemRewards(view, { customers, rewards }) {
       updateButtonState();
     }
 
+    prevRewardPageBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderRewardCatalog();
+      }
+    });
+
+    nextRewardPageBtn.addEventListener("click", () => {
+      currentPage++;
+      renderRewardCatalog();
+    });
+
     findCustomerButton.addEventListener("click", onFindCustomer);
     rewardListContainer.addEventListener("click", onAddReward);
     addedRewardsContainer.addEventListener("click", onModifyCart);
     confirmRedemptionButton.addEventListener("click", confirmRedemption);
+
+    if (data && data.code) {
+      codeInput.value = data.code;
+      onFindCustomer();
+    }
   });
 }

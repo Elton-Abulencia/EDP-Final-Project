@@ -11,9 +11,14 @@ export function registerProcessPurchase(view, { customers, products }) {
     const addedProductsContainer = elem.querySelector("#addedProducts");
     const productEntryTemplate = elem.querySelector("#productEntry");
     const addedProductEntryTemplate = elem.querySelector("#addedProductEntry");
+    const prevProductPageBtn = elem.querySelector("#prevProductPageBtn");
+    const nextProductPageBtn = elem.querySelector("#nextProductPageBtn");
+    const productPageIndicator = elem.querySelector("#productPageIndicator");
     const confirmTransactionButton = elem.querySelector("#confirmTransaction");
 
     const allProducts = products.products;
+    const ITEMS_PER_PAGE = 5;
+    let currentPage = 1;
 
     let customer = null;
     const cart = new Map();
@@ -24,14 +29,41 @@ export function registerProcessPurchase(view, { customers, products }) {
       confirmTransactionButton.disabled = !(hasCustomer && hasItems);
     }
 
-    allProducts.forEach((p) => {
-      const clone = productEntryTemplate.content.cloneNode(true);
-      const item = clone.querySelector(".product-item");
-      item.dataset.productId = p.id;
-      item.querySelector(".productName").textContent = p.name;
-      item.querySelector(".points").textContent = p.points;
-      productListContainer.appendChild(clone);
-    });
+    function renderProductCatalog() {
+      const totalPages = Math.max(
+        1,
+        Math.ceil(allProducts.length / ITEMS_PER_PAGE),
+      );
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      productListContainer.innerHTML = "";
+
+      if (allProducts.length === 0) {
+        const emptyLi = document.createElement("li");
+        emptyLi.textContent = "No products available.";
+        productListContainer.appendChild(emptyLi);
+        productPageIndicator.textContent = "Page 0 of 0";
+        prevProductPageBtn.disabled = true;
+        nextProductPageBtn.disabled = true;
+        return;
+      }
+
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const pageItems = allProducts.slice(start, start + ITEMS_PER_PAGE);
+
+      pageItems.forEach((p) => {
+        const clone = productEntryTemplate.content.cloneNode(true);
+        const item = clone.querySelector(".product-item");
+        item.dataset.productId = p.id;
+        item.querySelector(".productName").textContent = p.name;
+        item.querySelector(".points").textContent = p.points;
+        productListContainer.appendChild(clone);
+      });
+
+      productPageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+      prevProductPageBtn.disabled = currentPage <= 1;
+      nextProductPageBtn.disabled = currentPage >= totalPages;
+    }
 
     function resetCustomerDisplay() {
       customerNameDisplay.textContent = "";
@@ -101,6 +133,8 @@ export function registerProcessPurchase(view, { customers, products }) {
       customerPointsDisplay.textContent = customer.points;
       displayCustomer.style.display = "block";
 
+      currentPage = 1;
+      renderProductCatalog();
       purchaseWorkflow.style.display = "block";
       renderCart();
     }
@@ -146,7 +180,10 @@ export function registerProcessPurchase(view, { customers, products }) {
       if (!customer || cart.size === 0) return;
 
       const productIds = [];
+      const itemSummaries = [];
+
       for (const [productId, item] of cart.entries()) {
+        itemSummaries.push(`${item.product.name} (x${item.quantity})`);
         for (let i = 0; i < item.quantity; i++) {
           productIds.push(productId);
         }
@@ -159,6 +196,11 @@ export function registerProcessPurchase(view, { customers, products }) {
       }
 
       customer.updatePoints((p) => p + totalPointsEarned);
+      customer.addHistory(
+        "Purchase",
+        `Earned ${totalPointsEarned} pts — ${itemSummaries.join(", ")}`,
+      );
+
       alert(
         `Transaction confirmed! Added ${totalPointsEarned} points to ${customer.name}.`,
       );
@@ -172,9 +214,28 @@ export function registerProcessPurchase(view, { customers, products }) {
       updateButtonState();
     }
 
+    prevProductPageBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderProductCatalog();
+      }
+    });
+
+    nextProductPageBtn.addEventListener("click", () => {
+      currentPage++;
+      renderProductCatalog();
+    });
+
     findCustomerButton.addEventListener("click", onFindCustomer);
     productListContainer.addEventListener("click", onAddProduct);
     addedProductsContainer.addEventListener("click", onModifyCart);
     confirmTransactionButton.addEventListener("click", confirmTransaction);
+
+    renderProductCatalog();
+
+    if (data && data.code) {
+      codeInput.value = data.code;
+      onFindCustomer();
+    }
   });
 }

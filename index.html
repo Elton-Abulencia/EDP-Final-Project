@@ -5,107 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="main.js" type="module" defer></script>
-    <style>
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family: monospace, sans-serif;
-        display: flex;
-        height: 100vh;
-        background-color: #ffffff;
-        color: #000000;
-      }
-
-      .sidebar {
-        width: 220px;
-        border-right: 1px solid #000000;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 20px;
-      }
-
-      .sys-name {
-        font-weight: bold;
-        font-size: 1.1rem;
-        margin-bottom: 20px;
-      }
-
-      #sidebarButtons {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        flex-grow: 1;
-      }
-
-      .sidebar-link {
-        cursor: pointer;
-        text-decoration: underline;
-      }
-
-      .sidebar-link:hover {
-        font-weight: bold;
-      }
-
-      hr {
-        border: none;
-        border-top: 1px solid #000000;
-        margin: 20px 0;
-      }
-
-      #root {
-        flex-grow: 1;
-        padding: 30px;
-        overflow-y: auto;
-      }
-
-      form {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        max-width: 400px;
-      }
-
-      input,
-      textarea {
-        padding: 8px;
-        border: 1px solid #000000;
-        background: #ffffff;
-        font-family: inherit;
-      }
-
-      button {
-        padding: 8px 12px;
-        border: 1px solid #000000;
-        background: #ffffff;
-        cursor: pointer;
-        font-family: inherit;
-        text-align: center;
-      }
-
-      button:hover {
-        background: #000000;
-        color: #ffffff;
-      }
-
-      ul {
-        list-style-type: none;
-        padding: 0;
-      }
-
-      li {
-        border: 1px solid #000000;
-        padding: 10px;
-        margin-bottom: 8px;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        justify-content: space-between;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="sidebar">
@@ -113,16 +13,22 @@
       <div id="sidebarButtons">
         <span class="sidebar-link" data-view="dashboard">Dashboard</span>
         <span class="sidebar-link" data-view="addCustomer">Add Customer</span>
-        <span class="sidebar-link" data-view="addProducts"
-          >Add new Products</span
+        <span class="sidebar-link" data-view="manageProducts"
+          >Manage Products</span
         >
-        <span class="sidebar-link" data-view="addRewards">Add new Rewards</span>
+        <span class="sidebar-link" data-view="manageRewards"
+          >Manage Rewards</span
+        >
         <span class="sidebar-link" data-view="processPurchase"
           >Process Purchase</span
         >
         <span class="sidebar-link" data-view="redeemRewards"
           >Redeem Rewards</span
         >
+        <span class="sidebar-link" data-view="customerProfile"
+          >Customer Profile</span
+        >
+        <span class="sidebar-link" data-view="findCustomer">Find Customer</span>
       </div>
     </div>
     <hr />
@@ -144,7 +50,19 @@
         <label for="name">Name</label>
         <input type="text" name="name" id="name" placeholder="name" />
         <p id="nameErr" style="color: red"></p>
-        <br />
+
+        <label for="contact">Contact (Optional)</label>
+        <input
+          type="text"
+          name="contact"
+          id="contact"
+          placeholder="09..., @handle, or email"
+        />
+        <p id="contactErr" style="color: red"></p>
+
+        <label for="note">Note / Description (Optional)</label>
+        <textarea name="note" id="note" placeholder="customer notes"></textarea>
+
         <label for="code">Code</label>
         <input type="text" name="code" id="code" placeholder="code" />
         <p id="codeErr" style="color: red"></p>
@@ -155,46 +73,116 @@
       </form>
     </template>
 
-    <template id="addProducts">
-      <h3>Add New Products</h3>
+    <template id="manageProducts">
+      <h3>Manage Products</h3>
       <hr />
-      <form action="" id="addProductForm">
+
+      <h4 id="formHeading">Add New Product</h4>
+      <form id="productForm">
         <label for="productName">Product Name</label>
         <input type="text" name="productName" id="productName" />
         <p id="nameErr" style="color: red"></p>
-        <br />
+
         <label for="description">Description</label>
         <textarea name="description" id="description"></textarea>
         <p id="descErr" style="color: red"></p>
-        <br />
+
         <label for="points">Points</label>
         <input type="number" name="points" id="points" />
         <p id="pointsErr" style="color: red"></p>
-        <br />
-        <button type="submit">Add Product</button>
+
+        <div>
+          <button type="submit" id="submitBtn">Add Product</button>
+          <button type="button" id="cancelEditBtn" style="display: none">
+            Cancel Edit
+          </button>
+        </div>
         <p id="successMsg" style="color: green"></p>
       </form>
+
+      <hr />
+      <h4>Product List</h4>
+      <template id="manageProductEntry">
+        <li class="manage-product-item">
+          <div>
+            <div>
+              <strong class="itemName"></strong> | Points:
+              <span class="itemPoints"></span>
+            </div>
+            <small class="itemDesc"></small>
+          </div>
+          <div>
+            <button type="button" class="editBtn">Edit</button>
+            <button type="button" class="deleteBtn">Delete</button>
+          </div>
+        </li>
+      </template>
+      <ul id="productList"></ul>
+
+      <div
+        id="paginationControls"
+        style="display: flex; gap: 10px; align-items: center"
+      >
+        <button type="button" id="prevPageBtn">Previous</button>
+        <span id="pageIndicator"></span>
+        <button type="button" id="nextPageBtn">Next</button>
+      </div>
     </template>
 
-    <template id="addRewards">
-      <h3>Add New Rewards</h3>
+    <template id="manageRewards">
+      <h3>Manage Rewards</h3>
       <hr />
-      <form action="" id="addRewardForm">
+
+      <h4 id="formHeading">Add New Reward</h4>
+      <form id="rewardForm">
         <label for="rewardName">Reward Name</label>
         <input type="text" name="rewardName" id="rewardName" />
         <p id="nameErr" style="color: red"></p>
-        <br />
+
         <label for="description">Description</label>
         <textarea name="description" id="description"></textarea>
         <p id="descErr" style="color: red"></p>
-        <br />
-        <label for="points">Points</label>
+
+        <label for="points">Points Cost</label>
         <input type="number" name="points" id="points" />
         <p id="pointsErr" style="color: red"></p>
-        <br />
-        <button type="submit">Add Reward</button>
+
+        <div>
+          <button type="submit" id="submitBtn">Add Reward</button>
+          <button type="button" id="cancelEditBtn" style="display: none">
+            Cancel Edit
+          </button>
+        </div>
         <p id="successMsg" style="color: green"></p>
       </form>
+
+      <hr />
+      <h4>Reward List</h4>
+      <template id="manageRewardEntry">
+        <li class="manage-reward-item">
+          <div>
+            <div>
+              <strong class="itemName"></strong> | Points Cost:
+              <span class="itemPoints"></span>
+            </div>
+            <small class="itemDesc"></small>
+          </div>
+          <div>
+            <button type="button" class="editBtn">Edit</button>
+            <button type="button" class="deleteBtn">Delete</button>
+          </div>
+        </li>
+      </template>
+      <ul id="rewardList"></ul>
+
+      <div
+        id="paginationControls"
+        style="display: flex; gap: 10px; align-items: center"
+      >
+        <button type="button" id="prevPageBtn">Previous</button>
+        <span id="pageIndicator"></span>
+        <button type="button" id="nextPageBtn">Next</button>
+      </div>
     </template>
 
     <template id="processPurchase">
@@ -215,11 +203,15 @@
         <h3>Added Products (Cart)</h3>
         <template id="addedProductEntry">
           <li class="added-product-item">
-            name: <span class="productName"></span> | points:
-            <span class="points"></span> | qty: <span class="quantity"></span>
-            <button type="button" class="increaseProduct">+</button>
-            <button type="button" class="decreaseProduct">-</button>
-            <button type="button" class="removeProduct">Remove</button>
+            <span
+              >name: <span class="productName"></span> | points:
+              <span class="points"></span> | qty: <span class="quantity"></span
+            ></span>
+            <div>
+              <button type="button" class="increaseProduct">+</button>
+              <button type="button" class="decreaseProduct">-</button>
+              <button type="button" class="removeProduct">Remove</button>
+            </div>
           </li>
         </template>
         <ul id="addedProducts"></ul>
@@ -228,12 +220,22 @@
         <h3>Product Catalog</h3>
         <template id="productEntry">
           <li class="product-item">
-            name: <span class="productName"></span> | points:
-            <span class="points"></span>
+            <span
+              >name: <span class="productName"></span> | points:
+              <span class="points"></span
+            ></span>
             <button type="button" class="addProduct">Add Product</button>
           </li>
         </template>
         <ul id="productList"></ul>
+        <div
+          id="productPaginationControls"
+          style="display: flex; gap: 10px; align-items: center"
+        >
+          <button type="button" id="prevProductPageBtn">Previous</button>
+          <span id="productPageIndicator"></span>
+          <button type="button" id="nextProductPageBtn">Next</button>
+        </div>
         <hr />
         <button id="confirmTransaction">Confirm Transaction</button>
       </div>
@@ -293,9 +295,121 @@
           </li>
         </template>
         <ul id="rewardList"></ul>
+        <div
+          id="rewardPaginationControls"
+          style="display: flex; gap: 10px; align-items: center"
+        >
+          <button type="button" id="prevRewardPageBtn">Previous</button>
+          <span id="rewardPageIndicator"></span>
+          <button type="button" id="nextRewardPageBtn">Next</button>
+        </div>
         <hr />
         <button id="confirmRedemption">Confirm Redemption</button>
       </div>
+    </template>
+
+    <template id="customerProfile">
+      <h3>Customer Profile</h3>
+      <hr />
+      <div>
+        <label for="code">Code</label>
+        <input type="text" name="code" id="code" placeholder="6-digit code" />
+        <button type="button" id="findCustomer">Find Customer</button>
+        <p id="findError" style="color: red"></p>
+      </div>
+
+      <div id="profileContent" style="display: none">
+        <hr />
+        <div><strong>Name:</strong> <span id="profileName"></span></div>
+        <div><strong>Code:</strong> <span id="profileCode"></span></div>
+        <div><strong>Points:</strong> <span id="profilePoints"></span></div>
+
+        <div style="margin-top: 12px; display: flex; gap: 10px">
+          <button type="button" id="profilePurchaseBtn">
+            Process Purchase
+          </button>
+          <button type="button" id="profileRedeemBtn">Redeem Rewards</button>
+        </div>
+
+        <hr />
+        <form id="profileDetailsForm">
+          <label for="profileContact">Contact</label>
+          <input
+            type="text"
+            id="profileContact"
+            placeholder="09..., @handle, or email"
+          />
+          <p id="contactErr" style="color: red"></p>
+
+          <label for="profileNote">Note / Description</label>
+          <textarea
+            id="profileNote"
+            rows="3"
+            placeholder="Customer preferences or notes..."
+          ></textarea>
+
+          <button type="submit">Save Details</button>
+          <p id="saveMsg" style="color: green"></p>
+        </form>
+
+        <hr />
+        <h4>History Logs</h4>
+        <template id="historyEntry">
+          <li class="history-item">
+            <div>
+              <strong class="historyTitle"></strong> -
+              <span class="historyDesc"></span>
+            </div>
+            <small class="historyDate"></small>
+          </li>
+        </template>
+        <ul id="historyList"></ul>
+
+        <div
+          id="historyPaginationControls"
+          style="display: flex; gap: 10px; align-items: center"
+        >
+          <button type="button" id="prevHistoryPageBtn">Previous</button>
+          <span id="historyPageIndicator"></span>
+          <button type="button" id="nextHistoryPageBtn">Next</button>
+        </div>
+      </div>
+    </template>
+    <template id="findCustomer">
+      <h3>Find Customer</h3>
+      <hr />
+      <div>
+        <label for="searchQuery">Code, Name, or Contact</label>
+        <input
+          type="text"
+          id="searchQuery"
+          placeholder="Search by 6-digit code, name, 09..., @handle, or email"
+        />
+        <button type="button" id="searchBtn">Search</button>
+      </div>
+
+      <hr />
+      <p id="resultCount"></p>
+
+      <template id="customerResultEntry">
+        <li class="customer-result-item">
+          <div>
+            <div>
+              <strong class="resultName"></strong> (<span
+                class="resultCode"
+              ></span
+              >)
+            </div>
+            <div>
+              Contact: <span class="resultContact"></span> | Points:
+              <span class="resultPoints"></span>
+            </div>
+          </div>
+          <button type="button" class="viewProfileBtn">View Profile</button>
+        </li>
+      </template>
+
+      <ul id="searchResults"></ul>
     </template>
   </body>
 </html>
