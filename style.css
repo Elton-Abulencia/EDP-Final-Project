@@ -14,7 +14,13 @@
   --ok-bg: #eaf6ec;
   --ok-line: #b5dcbc;
   --radius: 6px;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
   color: var(--text);
 }
 
@@ -248,7 +254,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-
 #generateCode,
 #cancelEditBtn,
 .editBtn,
@@ -286,7 +291,9 @@ button:disabled {
 @media (prefers-reduced-motion: no-preference) {
   button,
   .sidebar-link {
-    transition: background-color 0.15s, border-color 0.15s;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
   }
 }
 
@@ -317,7 +324,6 @@ button:disabled {
   border: 1px solid var(--ok-line);
   border-radius: 4px;
 }
-
 
 p:empty {
   display: none;
@@ -352,7 +358,6 @@ p:empty {
 #redeemWorkflow {
   margin-top: 1.25rem;
 }
-
 
 ul {
   margin: 0 0 0.5rem;
@@ -407,7 +412,6 @@ li:not([class]):hover {
   gap: 0.4rem;
 }
 
-
 small {
   display: block;
   margin-top: 0.15rem;
@@ -420,7 +424,6 @@ small {
 .historyTitle {
   font-weight: 600;
 }
-
 
 [id$="aginationControls"] {
   margin-top: 0.75rem;

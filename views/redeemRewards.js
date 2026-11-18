@@ -1,3 +1,5 @@
+import { validateCustomerCode } from "../lib/helpers/inputValidations.js";
+
 export function registerRedeemRewards(view, { customers, rewards }) {
   view.registerView("redeemRewards", "redeemRewards", (elem, data) => {
     const codeInput = elem.querySelector("#code");
@@ -106,6 +108,11 @@ export function registerRedeemRewards(view, { customers, rewards }) {
     }
 
     codeInput.addEventListener("input", () => {
+      if (findErrorDisplay.textContent) {
+        findErrorDisplay.textContent = validateCustomerCode(
+          codeInput.value,
+        ).error;
+      }
       if (customer) {
         customer = null;
         resetCustomerDisplay();
@@ -119,8 +126,9 @@ export function registerRedeemRewards(view, { customers, rewards }) {
 
     function onFindCustomer() {
       const code = codeInput.value.trim();
-      if (!code) {
-        findErrorDisplay.textContent = "Please enter a customer code.";
+      const { isValid, error } = validateCustomerCode(code);
+      if (!isValid) {
+        findErrorDisplay.textContent = error;
         customer = null;
         resetCustomerDisplay();
         redeemWorkflow.style.display = "none";
@@ -266,6 +274,8 @@ export function registerRedeemRewards(view, { customers, rewards }) {
     rewardListContainer.addEventListener("click", onAddReward);
     addedRewardsContainer.addEventListener("click", onModifyCart);
     confirmRedemptionButton.addEventListener("click", confirmRedemption);
+
+    updateButtonState();
 
     if (data && data.code) {
       codeInput.value = data.code;

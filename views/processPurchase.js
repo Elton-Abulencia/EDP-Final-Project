@@ -1,3 +1,5 @@
+import { validateCustomerCode } from "../lib/helpers/inputValidations.js";
+
 export function registerProcessPurchase(view, { customers, products }) {
   view.registerView("processPurchase", "processPurchase", (elem, data) => {
     const codeInput = elem.querySelector("#code");
@@ -96,6 +98,11 @@ export function registerProcessPurchase(view, { customers, products }) {
     }
 
     codeInput.addEventListener("input", () => {
+      if (findErrorDisplay.textContent) {
+        findErrorDisplay.textContent = validateCustomerCode(
+          codeInput.value,
+        ).error;
+      }
       if (customer) {
         customer = null;
         resetCustomerDisplay();
@@ -109,8 +116,9 @@ export function registerProcessPurchase(view, { customers, products }) {
 
     function onFindCustomer() {
       const code = codeInput.value.trim();
-      if (!code) {
-        findErrorDisplay.textContent = "Please enter a customer code.";
+      const { isValid, error } = validateCustomerCode(code);
+      if (!isValid) {
+        findErrorDisplay.textContent = error;
         customer = null;
         resetCustomerDisplay();
         purchaseWorkflow.style.display = "none";
@@ -231,6 +239,7 @@ export function registerProcessPurchase(view, { customers, products }) {
     addedProductsContainer.addEventListener("click", onModifyCart);
     confirmTransactionButton.addEventListener("click", confirmTransaction);
 
+    updateButtonState();
     renderProductCatalog();
 
     if (data && data.code) {

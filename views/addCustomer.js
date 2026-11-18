@@ -1,4 +1,8 @@
-import { getContactError } from "../lib/helpers/inputValidations.js";
+import {
+  validateContact,
+  validateCustomerCode,
+  validateCustomerName,
+} from "../lib/helpers/inputValidations.js";
 
 export function registerAddCustomer(view, { customers }) {
   view.registerView("addCustomer", "addCustomer", (elem, data) => {
@@ -13,29 +17,25 @@ export function registerAddCustomer(view, { customers }) {
     const generateCodeBtn = elem.querySelector("#generateCode");
     const successMsg = elem.querySelector("#successMsg");
 
-    function validateName() {
-      const name = nameInput.value.trim();
-      if (name.length < 3) {
-        nameErr.textContent = "Name must be at least 3 characters long.";
-        return false;
-      }
-      nameErr.textContent = "";
-      return true;
+    function checkName() {
+      const { isValid, error } = validateCustomerName(nameInput.value);
+      nameErr.textContent = error;
+      return isValid;
     }
 
-    function validateContact() {
-      const error = getContactError(contactInput.value);
+    function checkContact() {
+      const { isValid, error } = validateContact(contactInput.value);
       contactErr.textContent = error;
-      return error === "";
+      return isValid;
     }
 
-    function validateCode() {
-      const code = codeInput.value.trim();
-      if (code.length !== 6) {
-        codeErr.textContent = "Code must be exactly 6 characters long.";
+    function checkCode() {
+      const { isValid, error } = validateCustomerCode(codeInput.value);
+      if (!isValid) {
+        codeErr.textContent = error;
         return false;
       }
-      if (customers.getFromCode(code)) {
+      if (customers.getFromCode(codeInput.value.trim())) {
         codeErr.textContent = "This code already exists. Generate a new one.";
         return false;
       }
@@ -46,16 +46,16 @@ export function registerAddCustomer(view, { customers }) {
     function onGenerateCode() {
       successMsg.textContent = "";
       codeInput.value = customers.generateNewCode();
-      validateCode();
+      checkCode();
     }
 
     function onSubmit(e) {
       e.preventDefault();
       successMsg.textContent = "";
 
-      const isNameValid = validateName();
-      const isContactValid = validateContact();
-      const isCodeValid = validateCode();
+      const isNameValid = checkName();
+      const isContactValid = checkContact();
+      const isCodeValid = checkCode();
       if (!isNameValid || !isContactValid || !isCodeValid) return;
 
       const name = nameInput.value.trim();
@@ -74,18 +74,18 @@ export function registerAddCustomer(view, { customers }) {
       addCustomerForm.reset();
     }
 
-    nameInput.addEventListener("blur", validateName);
-    contactInput.addEventListener("blur", validateContact);
-    codeInput.addEventListener("blur", validateCode);
+    nameInput.addEventListener("blur", checkName);
+    contactInput.addEventListener("blur", checkContact);
+    codeInput.addEventListener("blur", checkCode);
 
     nameInput.addEventListener("input", () => {
-      if (nameErr.textContent) validateName();
+      if (nameErr.textContent) checkName();
     });
     contactInput.addEventListener("input", () => {
-      if (contactErr.textContent) validateContact();
+      if (contactErr.textContent) checkContact();
     });
     codeInput.addEventListener("input", () => {
-      if (codeErr.textContent) validateCode();
+      if (codeErr.textContent) checkCode();
     });
 
     generateCodeBtn.addEventListener("click", onGenerateCode);

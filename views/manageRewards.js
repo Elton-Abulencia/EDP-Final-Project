@@ -1,3 +1,8 @@
+import {
+  validatePoints,
+  validateRequiredName,
+} from "../lib/helpers/inputValidations.js";
+
 export function registerManageRewards(view, { rewards }) {
   view.registerView("manageRewards", "manageRewards", (elem, data) => {
     const formHeading = elem.querySelector("#formHeading");
@@ -6,7 +11,6 @@ export function registerManageRewards(view, { rewards }) {
     const descInput = elem.querySelector("#description");
     const pointsInput = elem.querySelector("#points");
     const nameErr = elem.querySelector("#nameErr");
-    const descErr = elem.querySelector("#descErr");
     const pointsErr = elem.querySelector("#pointsErr");
     const submitBtn = elem.querySelector("#submitBtn");
     const cancelEditBtn = elem.querySelector("#cancelEditBtn");
@@ -24,36 +28,22 @@ export function registerManageRewards(view, { rewards }) {
 
     function clearErrors() {
       nameErr.textContent = "";
-      descErr.textContent = "";
       pointsErr.textContent = "";
     }
 
-    function validateName() {
-      if (!nameInput.value.trim()) {
-        nameErr.textContent = "Reward name is required.";
-        return false;
-      }
-      nameErr.textContent = "";
-      return true;
+    function checkName() {
+      const { isValid, error } = validateRequiredName(
+        nameInput.value,
+        "Reward name",
+      );
+      nameErr.textContent = error;
+      return isValid;
     }
 
-    function validateDesc() {
-      if (!descInput.value.trim()) {
-        descErr.textContent = "Description is required.";
-        return false;
-      }
-      descErr.textContent = "";
-      return true;
-    }
-
-    function validatePoints() {
-      const val = pointsInput.value.trim();
-      if (val === "" || Number(val) < 0) {
-        pointsErr.textContent = "Points must be a valid non-negative number.";
-        return false;
-      }
-      pointsErr.textContent = "";
-      return true;
+    function checkPoints() {
+      const { isValid, error } = validatePoints(pointsInput.value);
+      pointsErr.textContent = error;
+      return isValid;
     }
 
     function enterAddMode() {
@@ -122,8 +112,9 @@ export function registerManageRewards(view, { rewards }) {
       e.preventDefault();
       successMsg.textContent = "";
 
-      const isValid = validateName() & validateDesc() & validatePoints();
-      if (!isValid) return;
+      const isNameValid = checkName();
+      const isPointsValid = checkPoints();
+      if (!isNameValid || !isPointsValid) return;
 
       const name = nameInput.value.trim();
       const description = descInput.value.trim();
@@ -163,18 +154,14 @@ export function registerManageRewards(view, { rewards }) {
       }
     }
 
-    nameInput.addEventListener("blur", validateName);
-    descInput.addEventListener("blur", validateDesc);
-    pointsInput.addEventListener("blur", validatePoints);
+    nameInput.addEventListener("blur", checkName);
+    pointsInput.addEventListener("blur", checkPoints);
 
     nameInput.addEventListener("input", () => {
-      if (nameErr.textContent) validateName();
-    });
-    descInput.addEventListener("input", () => {
-      if (descErr.textContent) validateDesc();
+      if (nameErr.textContent) checkName();
     });
     pointsInput.addEventListener("input", () => {
-      if (pointsErr.textContent) validatePoints();
+      if (pointsErr.textContent) checkPoints();
     });
 
     form.addEventListener("submit", onSubmit);

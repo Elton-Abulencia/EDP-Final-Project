@@ -3,13 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Tasa &amp; Tawa</title>
     <script src="main.js" type="module" defer></script>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="sidebar">
-      <div class="sys-name">Tasa & Tawa</div>
       <div class="sys-name">
         <img src="logo.png" alt="Tasa & Tawa logo" class="sys-logo" />
         <span>Tasa &amp; Tawa</span>
@@ -52,7 +51,7 @@
       <hr />
       <form action="" id="addCustomerForm">
         <label for="name">Name</label>
-        <input type="text" name="name" id="name" placeholder="name" />
+        <input type="text" name="name" id="name" placeholder="Customer name" />
         <p id="nameErr" style="color: red"></p>
 
         <label for="contact">Contact (Optional)</label>
@@ -65,10 +64,17 @@
         <p id="contactErr" style="color: red"></p>
 
         <label for="note">Note / Description (Optional)</label>
-        <textarea name="note" id="note" placeholder="customer notes"></textarea>
+        <textarea name="note" id="note" placeholder="Customer notes"></textarea>
 
         <label for="code">Code</label>
-        <input type="text" name="code" id="code" placeholder="code" />
+        <input
+          type="text"
+          name="code"
+          id="code"
+          maxlength="6"
+          inputmode="numeric"
+          placeholder="6-digit code"
+        />
         <p id="codeErr" style="color: red"></p>
         <button type="button" id="generateCode">Generate Code</button>
         <br /><br />
@@ -87,12 +93,18 @@
         <input type="text" name="productName" id="productName" />
         <p id="nameErr" style="color: red"></p>
 
-        <label for="description">Description</label>
+        <label for="description">Description (Optional)</label>
         <textarea name="description" id="description"></textarea>
-        <p id="descErr" style="color: red"></p>
 
         <label for="points">Points</label>
-        <input type="number" name="points" id="points" />
+        <input
+          type="number"
+          name="points"
+          id="points"
+          min="0"
+          step="1"
+          inputmode="numeric"
+        />
         <p id="pointsErr" style="color: red"></p>
 
         <div>
@@ -143,12 +155,18 @@
         <input type="text" name="rewardName" id="rewardName" />
         <p id="nameErr" style="color: red"></p>
 
-        <label for="description">Description</label>
+        <label for="description">Description (Optional)</label>
         <textarea name="description" id="description"></textarea>
-        <p id="descErr" style="color: red"></p>
 
         <label for="points">Points Cost</label>
-        <input type="number" name="points" id="points" />
+        <input
+          type="number"
+          name="points"
+          id="points"
+          min="0"
+          step="1"
+          inputmode="numeric"
+        />
         <p id="pointsErr" style="color: red"></p>
 
         <div>
@@ -192,12 +210,30 @@
     <template id="processPurchase">
       <h3>Process Purchase</h3>
       <hr />
-      <label for="code">Code</label>
-      <input type="text" name="code" id="code" />
-      <button type="button" id="findCustomer">Find Customer</button>
-      <p id="findError"></p>
+      <div>
+        <label for="code">Code</label>
+        <input
+          type="text"
+          name="code"
+          id="code"
+          maxlength="6"
+          inputmode="numeric"
+          placeholder="6-digit code"
+        />
+        <button type="button" id="findCustomer">Find Customer</button>
+        <p id="findError" style="color: red"></p>
+      </div>
 
-      <div id="displayCustomer" style="display: none">
+      <div
+        id="displayCustomer"
+        style="
+          display: none;
+          border: 1px solid #000;
+          padding: 10px;
+          margin-top: 10px;
+          max-width: 300px;
+        "
+      >
         <div><strong>Name:</strong> <span id="customerName"></span></div>
         <div><strong>Points:</strong> <span id="customerPoints"></span></div>
       </div>
@@ -250,7 +286,14 @@
       <hr />
       <div>
         <label for="code">Code</label>
-        <input type="text" name="code" id="code" />
+        <input
+          type="text"
+          name="code"
+          id="code"
+          maxlength="6"
+          inputmode="numeric"
+          placeholder="6-digit code"
+        />
         <button type="button" id="findCustomer">Find Customer</button>
         <p id="findError" style="color: red"></p>
       </div>
@@ -317,7 +360,14 @@
       <hr />
       <div>
         <label for="code">Code</label>
-        <input type="text" name="code" id="code" placeholder="6-digit code" />
+        <input
+          type="text"
+          name="code"
+          id="code"
+          maxlength="6"
+          inputmode="numeric"
+          placeholder="6-digit code"
+        />
         <button type="button" id="findCustomer">Find Customer</button>
         <p id="findError" style="color: red"></p>
       </div>
@@ -337,7 +387,7 @@
 
         <hr />
         <form id="profileDetailsForm">
-          <label for="profileContact">Contact</label>
+          <label for="profileContact">Contact (Optional)</label>
           <input
             type="text"
             id="profileContact"
@@ -345,7 +395,7 @@
           />
           <p id="contactErr" style="color: red"></p>
 
-          <label for="profileNote">Note / Description</label>
+          <label for="profileNote">Note / Description (Optional)</label>
           <textarea
             id="profileNote"
             rows="3"
@@ -379,6 +429,7 @@
         </div>
       </div>
     </template>
+
     <template id="findCustomer">
       <h3>Find Customer</h3>
       <hr />

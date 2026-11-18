@@ -1,4 +1,7 @@
-import { getContactError } from "../lib/helpers/inputValidations.js";
+import {
+  validateContact,
+  validateCustomerCode,
+} from "../lib/helpers/inputValidations.js";
 
 export function registerCustomerProfile(view, { customers }) {
   view.registerView("customerProfile", "customerProfile", (elem, data) => {
@@ -29,10 +32,10 @@ export function registerCustomerProfile(view, { customers }) {
     let currentHistoryPage = 1;
     let currentCustomer = null;
 
-    function validateContact() {
-      const error = getContactError(profileContact.value);
+    function checkContact() {
+      const { isValid, error } = validateContact(profileContact.value);
       contactErr.textContent = error;
-      return error === "";
+      return isValid;
     }
 
     function renderHistory() {
@@ -88,8 +91,9 @@ export function registerCustomerProfile(view, { customers }) {
       const code = codeInput.value.trim();
       saveMsg.textContent = "";
 
-      if (!code) {
-        findError.textContent = "Please enter a customer code.";
+      const { isValid, error } = validateCustomerCode(code);
+      if (!isValid) {
+        findError.textContent = error;
         profileContent.style.display = "none";
         currentCustomer = null;
         return;
@@ -114,7 +118,7 @@ export function registerCustomerProfile(view, { customers }) {
       saveMsg.textContent = "";
       if (!currentCustomer) return;
 
-      if (!validateContact()) return;
+      if (!checkContact()) return;
 
       currentCustomer.updateDetails({
         contact: profileContact.value.trim(),
@@ -151,9 +155,15 @@ export function registerCustomerProfile(view, { customers }) {
       view.goto("redeemRewards", { code: currentCustomer.code });
     });
 
-    profileContact.addEventListener("blur", validateContact);
+    codeInput.addEventListener("input", () => {
+      if (findError.textContent) {
+        findError.textContent = validateCustomerCode(codeInput.value).error;
+      }
+    });
+
+    profileContact.addEventListener("blur", checkContact);
     profileContact.addEventListener("input", () => {
-      if (contactErr.textContent) validateContact();
+      if (contactErr.textContent) checkContact();
     });
 
     findCustomerBtn.addEventListener("click", onFindCustomer);
